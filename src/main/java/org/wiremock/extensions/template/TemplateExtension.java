@@ -19,31 +19,27 @@ import com.github.tomakehurst.wiremock.extension.Extension;
 import com.github.tomakehurst.wiremock.extension.ExtensionFactory;
 import com.github.tomakehurst.wiremock.extension.WireMockServices;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.TemplateEngine;
-import org.wiremock.extensions.template.extensions.RequestMatcher;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Factory to register all extension classes of this extension.
- * <p>
- * This class is intended to be initiated when registering the extension programmatically. It can thereby have constructor parameters. All extensions
- * added here are only constructed once, so they should organize any required state with care (or ideally don't have any).
+ *
+ * <p> As of WireMock 3.x, <a href="https://wiremock.org/docs/extending-wiremock/#extension-registration-via-service-loading">extension registration</a> is
+ * designed to be auto-detected via <a href="https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html">Java's Service Provider Interface</a>. Therefore, the
+ * class needs to have a default constructor and when changing the class and package name, also adapt
+ * src/main/resources/META-INF/services/com.github.tomakehurst.wiremock.extension.ExtensionFactory.
+ *
+ * <p> <a href="https://wiremock.org/docs/extending-wiremock/#extension-registration-via-service-loading">Registering the extension programmatically</a> is
+ * still possible, but discouraged. It can thereby have constructor parameters. All extensions added here are only constructed once, so they should organize any
+ * required state with care (or ideally don't have any).
  */
 public class TemplateExtension implements ExtensionFactory {
-
-    // TODO: Add the extensions, event listeners, request matchers and everything else needed for this extension.
-    private final RequestMatcher requestMatcher;
-
-    public TemplateExtension() {
-        var templateEngine = new TemplateEngine(Collections.emptyMap(), null, Collections.emptySet(), false);
-        this.requestMatcher = new RequestMatcher(templateEngine);
-    }
 
     @Override
     public List<Extension> create(WireMockServices services) {
         return List.of(
-            requestMatcher
+            new TemplateRequestMatcher(TemplateEngine.defaultTemplateEngine())
         );
     }
 }

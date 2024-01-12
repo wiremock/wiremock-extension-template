@@ -1,0 +1,18 @@
+{
+  "request": {
+    "urlPattern": "/template-request-matcher/[^/]+",
+    "customMatcher": {
+      "name": "template-request-matcher",
+      "parameters": {
+        "isTrue": "{{request.pathSegments.[1]}}"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "template-request-matcher-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
