@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.wiremock.extensions.template.extensions;
+package org.wiremock.extensions.template;
 
 import com.github.tomakehurst.wiremock.core.ConfigurationException;
 import com.github.tomakehurst.wiremock.extension.Parameters;
@@ -22,46 +22,42 @@ import com.github.tomakehurst.wiremock.extension.responsetemplating.TemplateEngi
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.matching.MatchResult;
 import com.github.tomakehurst.wiremock.matching.RequestMatcherExtension;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.common.LocalNotifier.notifier;
 
 /**
  * Example request matcher which can use the handlebars engine.
  */
-public class RequestMatcher extends RequestMatcherExtension {
+public class TemplateRequestMatcher extends RequestMatcherExtension {
 
     private final TemplateEngine templateEngine;
 
-    public RequestMatcher(TemplateEngine templateEngine) {
+    public TemplateRequestMatcher(TemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
     }
 
     @Override
     public String getName() {
-        return "template-matcher";
+        return "template-request-matcher";
     }
 
     @Override
     public MatchResult match(Request request, Parameters parameters) {
         // creating a template model from the current request so that it can be used with handlebars
         Map<String, Object> model = new HashMap<>(Map.of("request", RequestTemplateModel.from(request)));
-
-        return Optional
-            // get the configuration parameter for this matcher
-            .ofNullable(parameters.getString("isTrue", "false"))
-            .map(template -> isTrue(model, template))
-            .orElseThrow(() -> createConfigurationError("Parameters should contain 'isTrue'"));
+        String template = parameters.getString("isTrue", "false");
+        return isTrue(model, template);
     }
 
     private MatchResult isTrue(Map<String, Object> model, String template) {
         try {
             // render the configuration template with the provided request model
             var renderedTemplate = renderTemplate(model, template);
-            if (Boolean.parseBoolean(renderedTemplate)) {
+            if (new Gson().fromJson(renderedTemplate, Boolean.TYPE)) {
                 return MatchResult.exactMatch();
             } else {
                 return MatchResult.noMatch();
